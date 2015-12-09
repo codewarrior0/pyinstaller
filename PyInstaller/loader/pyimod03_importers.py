@@ -239,30 +239,48 @@ class FrozenImporter(object):
         imp_lock()
         module_loader = None  # None means - no module found in this importer.
 
-        if fullname in self.toc:
-            # Tell the import machinery to use self.load_module() to load the module.
-            module_loader = self
-            trace("import %s # PyInstaller PYZ", fullname)
-        elif path is not None:
+        if path is not None:
             # Try to handle module.__path__ modifications by the modules themselves
             # Reverse the fake __path__ we added to the package module to a
             # dotted module name and add the tail module from fullname onto that
             # to synthesize a new fullname
             modname = fullname.split('.')[-1]
 
-            for p in path:
-                p = p.replace(SYS_PREFIX, "")
+            for path_dir in path:
+                p = path_dir.replace(SYS_PREFIX, "")
                 parts = p.split(pyi_os_path.os_sep)
                 if not len(parts): continue
                 if not parts[0]:
                     parts = parts[1:]
                 parts.append(modname)
                 real_fullname = ".".join(parts)
+                if real_fullname == fullname:
+                    # Return regular loader if path override had no effect
+                    continue
+
                 if real_fullname in self.toc:
                     module_loader = FrozenPackageImporter(self, real_fullname)
                     trace("import %s as %s # PyInstaller PYZ (__path__ override: %s)",
                           real_fullname, fullname, p)
                     break
+                else:
+                    # Defer to regular loader to allow .pyc-files included as datas
+                    # to override .pyc-files that are in the PYZ but found later
+                    # in the path.
+                    try:
+                        imp.find_module(modname, [path_dir])
+                    except ImportError:
+                        pass
+                    else:
+                        trace("import %s as %s # plain importer override: %s",
+                              real_fullname, fullname, p)
+                        return None
+
+        if fullname in self.toc:
+            # Tell the import machinery to use self.load_module() to load the module.
+            module_loader = self
+            trace("import %s # PyInstaller PYZ", fullname)
+
         # Release the interpreter's import lock.
         imp_unlock()
         if module_loader is None:
