@@ -51,16 +51,30 @@ static ULONG_PTR actToken;
 #define STATUS_SXS_EARLY_DEACTIVATION 0xC015000F
 #endif
 
-char * GetWinErrorString() {
-    DWORD error_code = GetLastError();
-    char * errorString = NULL;
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, // dwFlags
-                   NULL, // lpSource
-                   error_code, // dwMessageID,
-                   0, // dwLanguageID,
-                   (char *)(&errorString), // lpBuffer; see FORMAT_MESSAGE_ALLOCATE_BUFFER
-                   0, // nSize
-                   NULL // Arguments
+#define ERROR_STRING_MAX 4096
+static char errorString[ERROR_STRING_MAX];
+
+/* GetWinErrorString
+ *
+ * Return a pointer to a null-terminated string containing a textual description of the
+ * given error code. If the error code is zero, the result of GetLastError() is used.
+ * The text is localized and ANSI-encoded. The caller is not responsible for freeing
+ * this pointer.
+ *
+ * Returns a pointer to statically-allocated storage. Not thread safe.
+ */
+
+char * GetWinErrorString(DWORD error_code) {
+    if(error_code == 0) {
+        error_code = GetLastError();
+    }
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, // dwFlags
+                   NULL,                       // lpSource
+                   error_code,                 // dwMessageID
+                   0,                          // dwLanguageID
+                   errorString,                // lpBuffer
+                   ERROR_STRING_MAX,           // nSize
+                   NULL                        // Arguments
                    );
 
     if(NULL == errorString) {
@@ -112,7 +126,7 @@ int CreateActContext(const char *manifestpath)
     }
 
     hCtx = INVALID_HANDLE_VALUE;
-    VS("LOADER: Error activating the context: ActivateActCtx: \n%s\n", GetWinErrorString());
+    VS("LOADER: Error activating the context: ActivateActCtx: \n%s\n", GetWinErrorString(0));
     return 0;
 }
 
@@ -199,8 +213,8 @@ char * pyi_win32_wcs_to_mbs_sfn(const wchar_t *wstr) {
     }
     if(!str){
         VS("Failed to get short path name for filename. GetShortPathNameW: \n%s",
-                   GetWinErrorString()
-                   );
+           GetWinErrorString(0)
+           );
         str = pyi_win32_wcs_to_mbs(wstr_sfn);
     }
     return str;
