@@ -86,8 +86,9 @@
 
 void pyi_global_printf(const char *fmt, ...);
 void pyi_global_perror(const char *funcname, const char *fmt, ...);
-void pyi_global_winerror(const char *funcname, const char *fmt, ...);
-
+#ifdef _WIN32
+    void pyi_global_winerror(const char *funcname, const char *fmt, ...);
+#endif
 
 /*
  * On Windows and with windowed mode (no console) show error messages

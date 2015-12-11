@@ -210,6 +210,7 @@ void pyi_global_perror(const char *funcname, const char *fmt, ...) {
     #endif
 }
 
+#ifdef _WIN32
 
 /*
  * Windows errors.
@@ -226,3 +227,5 @@ void pyi_global_winerror(const char *funcname, const char *fmt, ...) {
     va_end(v);
     fprintf(stderr, "%s: %s", funcname, GetWinErrorString(error_code));
 }
+
+#endif
