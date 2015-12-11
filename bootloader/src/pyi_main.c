@@ -61,7 +61,7 @@ int pyi_main(int argc, char * argv[])
     // TODO create special function to allocate memory for archive status pyi_arch_status_alloc_memory(archive_status);
     archive_status = (ARCHIVE_STATUS *) calloc(1,sizeof(ARCHIVE_STATUS));
     if (archive_status == NULL) {
-        FATALERROR("Cannot allocate memory for ARCHIVE_STATUS\n");
+        FATAL_PERROR("calloc", "Cannot allocate memory for ARCHIVE_STATUS\n");
         return -1;
 
     }

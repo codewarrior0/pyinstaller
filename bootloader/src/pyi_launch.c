@@ -143,7 +143,7 @@ static ARCHIVE_STATUS *_get_archive(ARCHIVE_STATUS *archive_pool[], const char *
     archive->has_temp_directory = archive_pool[SELF]->has_temp_directory;
 
     if (pyi_arch_open(archive)) {
-        FATALERROR("Error openning archive %s\n", path);
+        FATAL_PERROR("malloc", "Error openning archive %s\n", path);
         free(archive);
         return NULL;
     }
@@ -199,14 +199,14 @@ static int _extract_dependency(ARCHIVE_STATUS *archive_pool[], const char *item)
     if (checkFile(srcpath, "%s%s%s%s%s", archive_status->homepath, PYI_SEPSTR, dirname, PYI_SEPSTR, filename) == 0) {
         VS("LOADER: File %s found, assuming is onedir\n", srcpath);
         if (copyDependencyFromDir(archive_status, srcpath, filename) == -1) {
-            FATALERROR("Error coping %s\n", filename);
+            FATALERROR("Error copying %s\n", filename);
             return -1;
         }
     // TODO implement pyi_path_join to accept variable length of arguments for this case.
     } else if (checkFile(srcpath, "%s%s%s%s%s%s%s", archive_status->homepath, PYI_SEPSTR, "..", PYI_SEPSTR, dirname, PYI_SEPSTR, filename) == 0) {
         VS("LOADER: File %s found, assuming is onedir\n", srcpath);
         if (copyDependencyFromDir(archive_status, srcpath, filename) == -1) {
-            FATALERROR("Error coping %s\n", filename);
+            FATALERROR("Error copying %s\n", filename);
             return -1;
         }
     } else {

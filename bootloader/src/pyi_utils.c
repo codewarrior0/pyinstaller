@@ -555,7 +555,7 @@ int pyi_utils_create_child(const char *thisfile, const int argc, char *const arg
 		WaitForSingleObject(pi.hProcess, INFINITE);
 		GetExitCodeProcess(pi.hProcess, (unsigned long *)&rc);
 	} else {
-		FATALERROR("Error creating child process!\n");
+		FATAL_WINERROR("CreateProcessW", "Error creating child process!\n");
 		rc = -1;
 	}
 	return rc;
