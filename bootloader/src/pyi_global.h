@@ -78,6 +78,8 @@ typedef int bool;
  */
 
 void pyi_global_printf(const char *fmt, ...);
+void pyi_global_perror(const char *funcname, const char *fmt, ...);
+void pyi_global_winerror(const char *funcname, const char *fmt, ...);
 
 /*
  * On Windows and with windowed mode (no console) show error messages
@@ -90,10 +92,19 @@ void mbfatalerror(const char *fmt, ...);
 
 void mbothererror(const char *fmt, ...);
     #define OTHERERROR mbothererror
+
+    void mbfatal_perror(const char *funcname, const char *fmt, ...);
+    #define FATAL_PERROR mbfatal_perror
+
+    void mbfatal_winerror(const char *funcname, const char *fmt, ...);
+    #define FATAL_WINERROR mbfatal_winerror
+
 #else
 /* TODO copy over stbprint to bootloader. */
     #define FATALERROR pyi_global_printf
     #define OTHERERROR pyi_global_printf
+    #define FATAL_PERROR pyi_global_perror
+    #define FATAL_WINERROR pyi_global_winerror
 #endif  /* WIN32 and WINDOWED */
 
 /* Enable or disable debug output. */
