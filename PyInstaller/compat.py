@@ -508,7 +508,6 @@ PY3_BASE_MODULES = {
     # These modules are direct or indirect dependencies of encodings.* modules.
     # encodings modules must be recursively included to set the I/O encoding during
     # python startup.
-    '_collections_abc',
     '_weakrefset',
     'abc',
     'codecs',
@@ -536,6 +535,7 @@ if sys.version_info[0] == 3:
     if sys.version_info[1] >= 4:
         PY3_BASE_MODULES.update({
             '_bootlocale',
+            '_collections_abc',
         })
 
 # Object types of Pure Python modules in modulegraph dependency graph.
