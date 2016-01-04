@@ -29,7 +29,7 @@ import marshal
 import zlib
 
 from .readers import CArchiveReader, PYZ_TYPE_MODULE, PYZ_TYPE_PKG, PYZ_TYPE_DATA
-from ..compat import BYTECODE_MAGIC
+from ..compat import BYTECODE_MAGIC, is_py2
 
 
 class ArchiveWriter(object):
@@ -131,7 +131,7 @@ class ArchiveWriter(object):
                 MARSHALLABLE_TYPES = set((
                     bool, int, float, complex, str, bytes, bytearray,
                     tuple, list, set, frozenset, dict, CodeType))
-                if sys.version_info[0] == 2:
+                if is_py2 == 2:
                     MARSHALLABLE_TYPES.add(long)
 
                 for module_name, module_tuple in self.toc.items():

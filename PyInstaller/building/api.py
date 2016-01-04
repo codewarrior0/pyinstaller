@@ -26,7 +26,7 @@ from PyInstaller import is_win, is_darwin, HOMEPATH, PLATFORM
 from PyInstaller.archive.writers import ZlibArchiveWriter, CArchiveWriter
 from PyInstaller.building.utils import _check_guts_toc_mtime, _check_guts_toc, add_suffix_to_extensions, \
     checkCache, _check_path_overlap, _rmtree
-from PyInstaller.compat import is_cygwin
+from PyInstaller.compat import is_cygwin, is_py3
 from PyInstaller.config import CONF
 from PyInstaller.depend import bindepend
 from PyInstaller.depend.analysis import get_bootstrap_modules
@@ -137,7 +137,7 @@ class PYZ(Target):
             importer = pkgutil.get_importer(path_item)
             package, _, modname = modname.rpartition('.')
 
-            if sys.version_info >= (3,3) and hasattr(importer, 'find_loader'):
+            if is_py3 and hasattr(importer, 'find_loader'):
                 loader, portions = importer.find_loader(modname)
             else:
                 loader = importer.find_module(modname)
