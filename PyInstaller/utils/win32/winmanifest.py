@@ -1039,7 +1039,7 @@ def create_manifest(filename, manifest, console, uac_admin=False, uac_uiaccess=F
     elif not isinstance(manifest, Manifest):
         # Assume filename
         manifest = ManifestFromXMLFile(manifest)
-    dep_names = set([dep.name for dep in manifest.dependentAssemblies])
+    dep_names = {dep.name for dep in manifest.dependentAssemblies}
     if manifest.filename != filename:
         # Update dependent assemblies
         depmanifest = ManifestFromXMLFile(filename)
@@ -1051,12 +1051,13 @@ def create_manifest(filename, manifest, console, uac_admin=False, uac_uiaccess=F
         not "Microsoft.Windows.Common-Controls" in dep_names):
         # Add Microsoft.Windows.Common-Controls to dependent assemblies
         manifest.dependentAssemblies.append(
-            Manifest(type_="win32",
-                 name="Microsoft.Windows.Common-Controls",
-                 language="*",
-                 processorArchitecture=processor_architecture(),
-                 version=(6, 0, 0, 0),
-                 publicKeyToken="6595b64144ccf1df")
+            Manifest(
+                type_="win32",
+                name="Microsoft.Windows.Common-Controls",
+                language="*",
+                processorArchitecture=processor_architecture(),
+                version=(6, 0, 0, 0),
+                publicKeyToken="6595b64144ccf1df")
             )
     if uac_admin:
         manifest.requestedExecutionLevel = 'requireAdministrator'

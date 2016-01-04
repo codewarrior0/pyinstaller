@@ -35,12 +35,12 @@ logger = logging.getLogger(__name__)
 
 
 # All these extension represent Python modules or extension modules
-PY_EXECUTABLE_SUFFIXES = set(['.py', '.pyc', '.pyd', '.pyo', '.so'])
+PY_EXECUTABLE_SUFFIXES = {'.py', '.pyc', '.pyd', '.pyo', '.so'}
 
 # These extensions represent Python executables and should therefore be
 # ignored when collecting data files.
 # NOTE: .dylib files are not Python executable and should not be in this list.
-PY_IGNORE_EXTENSIONS = set(['.py', '.pyc', '.pyd', '.pyo', '.so'])
+PY_IGNORE_EXTENSIONS = {'.py', '.pyc', '.pyd', '.pyo', '.so'}
 
 # Some hooks need to save some values. This is the dict that can be used for
 # that.

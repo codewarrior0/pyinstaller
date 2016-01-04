@@ -99,11 +99,12 @@ LOAD_CONST = dis.opmap['LOAD_CONST']
 LOAD_GLOBAL = dis.opmap['LOAD_GLOBAL']
 LOAD_NAME = dis.opmap['LOAD_NAME']
 LOAD_ATTR = dis.opmap['LOAD_ATTR']
-COND_OPS = set([dis.opmap['POP_JUMP_IF_TRUE'],
-                dis.opmap['POP_JUMP_IF_FALSE'],
-                dis.opmap['JUMP_IF_TRUE_OR_POP'],
-                dis.opmap['JUMP_IF_FALSE_OR_POP'],
-            ])
+COND_OPS = {
+    dis.opmap['POP_JUMP_IF_TRUE'],
+    dis.opmap['POP_JUMP_IF_FALSE'],
+    dis.opmap['JUMP_IF_TRUE_OR_POP'],
+    dis.opmap['JUMP_IF_FALSE_OR_POP']
+}
 JUMP_FORWARD = dis.opmap['JUMP_FORWARD']
 HASJREL = set(dis.hasjrel)
 assert 'SET_LINENO' not in dis.opmap  # safty belt
