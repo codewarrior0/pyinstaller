@@ -15,7 +15,6 @@ Find external dependencies of binary libraries.
 import os
 import sys
 import re
-import platform
 import ctypes.util
 from glob import glob
 

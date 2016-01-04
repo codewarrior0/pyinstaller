@@ -10,7 +10,6 @@
 
 import os
 
-from PyInstaller import compat as compat
 from PyInstaller.utils import misc
 from PyInstaller.utils.misc import load_py_data_struct, save_py_data_struct
 from .. import log as logging

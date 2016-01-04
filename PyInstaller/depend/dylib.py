@@ -12,7 +12,6 @@
 Manipulating with dynamic libraries.
 """
 
-import os.path
 
 from PyInstaller.utils.win32 import winutils
 

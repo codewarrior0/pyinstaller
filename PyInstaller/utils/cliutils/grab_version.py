@@ -9,7 +9,6 @@
 
 
 import codecs
-import os
 import argparse
 
 import PyInstaller.utils.win32.versioninfo

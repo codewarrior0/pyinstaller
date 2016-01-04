@@ -26,8 +26,7 @@ from ..lib.modulegraph import modulegraph
 
 from .. import compat
 from ..compat import (is_darwin, is_unix, is_py2, is_freebsd,
-                      BYTECODE_MAGIC, PY3_BASE_MODULES,
-                      exec_python_rc)
+                      BYTECODE_MAGIC, PY3_BASE_MODULES)
 from .dylib import include_library
 from .. import log as logging
 
