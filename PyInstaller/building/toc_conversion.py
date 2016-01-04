@@ -23,7 +23,7 @@ PY_IGNORE_EXTENSIONS = set(
     '*'+s for s in PY_IGNORE_EXTENSIONS | PY_EXECUTABLE_SUFFIXES)
 # Exclude EGG-INFO, too, as long as we do not have a way to hold several
 # in one archive
-PY_IGNORE_EXTENSIONS = PY_IGNORE_EXTENSIONS | {['EGG-INFO']}
+PY_IGNORE_EXTENSIONS = PY_IGNORE_EXTENSIONS | {'EGG-INFO'}
 
 class DependencyProcessor(object):
     """

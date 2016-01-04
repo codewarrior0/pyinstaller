@@ -65,7 +65,7 @@ _excludes = {
 # Regex includes - overrides excludes.
 # Include list is used only to override specific libraries
 # from exclude list.
-_includes = {}
+_includes = set()
 
 
 _win_includes = {
