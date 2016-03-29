@@ -36,6 +36,7 @@ cherrypy
 gevent
 pygments
 pylint>=1.5
+scipy
 markdown
 simplejson # simplejson is used for text_c_extension
 sphinx
