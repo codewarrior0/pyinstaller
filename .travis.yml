@@ -35,6 +35,10 @@ matrix:
       # Ignore failures from OS X.
       - os: osx
 
+# Allow the following apt-installed packages to be visible in the virtualenv
+virtualenv:
+  system_site_packages: true
+
 addons:
   apt:
     packages:
@@ -54,6 +58,7 @@ addons:
     - python-scipy
     - python-wxgtk2.8
     - libespeak1  # required by pyttsx
+
 
 before_install:
   # Compile bootloader
