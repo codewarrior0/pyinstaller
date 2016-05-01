@@ -123,4 +123,4 @@ build: none
 test_script:
   # Split tests into several subprocesses.
   # Run unitttest first.
-  - "%CMD_IN_ENV% py.test -n 3 --maxfail 5 --durations=10 tests\\unit tests"
+  - "%CMD_IN_ENV% py.test -k test_idlelib[onefile -n 3 --maxfail 5 --durations=10 tests\\unit tests"
