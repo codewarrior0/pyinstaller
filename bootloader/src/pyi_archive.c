@@ -266,7 +266,7 @@ pyi_arch_find_cookie(ARCHIVE_STATUS *status, int search_end)
             memcpy(&status->cookie, search_ptr, sizeof(COOKIE));
 
             /* From the cookie, calculate the archive start */
-            status->pkgstart = search_start + (search_ptr - buf) - ntohl(status->cookie.len);
+            status->pkgstart = search_start + sizeof(COOKIE) + (search_ptr - buf) - ntohl(status->cookie.len);
 
             return 0;
         }
