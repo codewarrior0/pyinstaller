@@ -189,7 +189,7 @@ pyi_arch_extract2fs(ARCHIVE_STATUS *status, TOC *ptoc)
     FILE *out;
     size_t result, len;
     unsigned char *data = pyi_arch_extract(status, ptoc);
-
+    VS("Extracting %s", ptoc->name);
     /* Create tmp dir _MEIPASSxxx. */
     if (pyi_create_temp_path(status) == -1) {
         return -1;

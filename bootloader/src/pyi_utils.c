@@ -441,7 +441,7 @@ pyi_open_target(const char *path, const char* name_)
     strcpy(name, name_);
 
     dir = strtok(name, PYI_SEPSTR);
-
+    VS("Creating directories: %s", name_);
     while (dir != NULL) {
         strcat(fnm, PYI_SEPSTR);
         strcat(fnm, dir);
