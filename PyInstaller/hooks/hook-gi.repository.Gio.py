@@ -47,3 +47,10 @@ else:
     # To add a new platform add a new elif above with the proper is_<platform> and
     # proper pattern for finding the Gio modules on your platform.
     logger.warn('Bundling Gio modules is currently not supported on your platform.')
+
+
+def pre_safe_import_module(api):
+    # PyGObject modules loaded through the gi repository are marked as
+    # MissingModules by modulegraph so we convert them to
+    # RuntimeModules so their hooks are loaded and run.
+    api.add_runtime_module(api.module_name)

@@ -71,10 +71,6 @@ class PyiModuleGraph(ModuleGraph):
         Dictionary mapping the fully-qualified names of all modules with
         pre-find module path hooks to the absolute paths of such hooks. See the
         the `_find_module_path()` method for details.
-    _hooks_pre_safe_import_module : HooksCache
-        Dictionary mapping the fully-qualified names of all modules with
-        pre-safe import module hooks to the absolute paths of such hooks. See
-        the `_safe_import_module()` method for details.
     _user_hook_dirs : list
         List of the absolute paths of all directories containing user-defined
         hooks for the current application.
@@ -94,8 +90,8 @@ class PyiModuleGraph(ModuleGraph):
             user_hook_dirs if user_hook_dirs is not None else []
 
         # Hook-specific lookup tables, defined after defining "_user_hook_dirs".
+        # XXX these should go away very soon XXX
         logger.info('Initializing module graph hooks...')
-        self._hooks_pre_safe_import_module = self._cache_hooks('pre_safe_import_module')
         self._hooks_pre_find_module_path = self._cache_hooks('pre_find_module_path')
         self._available_rthooks = load_py_data_struct(
             os.path.join(self._homepath, 'PyInstaller', 'loader', 'rthooks.dat')
@@ -210,7 +206,6 @@ class PyiModuleGraph(ModuleGraph):
             if not hooked_module_names:
                 break
 
-
     def run_script(self, pathname, caller=None):
         """
         Wrap the parent's 'run_script' method and create graph from the first
@@ -256,33 +251,24 @@ class PyiModuleGraph(ModuleGraph):
         return value.
         """
         # If this module has pre-safe import module hooks, run these first.
-        if module_name in self._hooks_pre_safe_import_module:
+        if module_name in self.module_hook_cache:
             # For the absolute path of each such hook...
-            for hook_file in self._hooks_pre_safe_import_module[module_name]:
-                # Dynamically import this hook as a fabricated module.
-                logger.info('Processing pre-safe import module hook   %s', module_name)
-                hook_module_name = 'PyInstaller_hooks_pre_safe_import_module_' + module_name.replace('.', '_')
-                hook_module = importlib_load_source(hook_module_name, hook_file)
+            for module_hook in self.module_hook_cache[module_name]:
+                if not module_hook.pre_safe_import_module_was_called:
+                    # Object communicating changes made by this hook back to us.
+                    hook_api = PreSafeImportModuleAPI(
+                        module_graph=self,
+                        module_basename=module_basename,
+                        module_name=module_name,
+                        parent_package=parent_package,
+                    )
 
-                # Object communicating changes made by this hook back to us.
-                hook_api = PreSafeImportModuleAPI(
-                    module_graph=self,
-                    module_basename=module_basename,
-                    module_name=module_name,
-                    parent_package=parent_package,
-                )
+                    # Run this hook, passed this object.
+                    module_hook.call_pre_safe_import_module(hook_api)
 
-                # Run this hook, passed this object.
-                if not hasattr(hook_module, 'pre_safe_import_module'):
-                    raise NameError('pre_safe_import_module() function not defined by hook %r.' % hook_file)
-                hook_module.pre_safe_import_module(hook_api)
-
-                # Respect method call changes requested by this hook.
-                module_basename = hook_api.module_basename
-                module_name = hook_api.module_name
-
-            # Prevent subsequent calls from rerunning these hooks.
-            del self._hooks_pre_safe_import_module[module_name]
+                    # Respect method call changes requested by this hook.
+                    module_basename = hook_api.module_basename
+                    module_name = hook_api.module_name
 
         # Call the superclass method.
         return super(PyiModuleGraph, self)._safe_import_module(

@@ -18,3 +18,9 @@ GLib 2.42.2, PyGObject 3.14.0, and GObject Introspection 1.42 on Windows 7
 from PyInstaller.utils.hooks import get_gi_typelibs
 
 binaries, datas, hiddenimports = get_gi_typelibs('GModule', '2.0')
+
+def pre_safe_import_module(api):
+    # PyGObject modules loaded through the gi repository are marked as
+    # MissingModules by modulegraph so we convert them to
+    # RuntimeModules so their hooks are loaded and run.
+    api.add_runtime_module(api.module_name)

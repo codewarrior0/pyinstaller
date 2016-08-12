@@ -284,6 +284,9 @@ class ModuleHook(object):
         self.module_name = module_name
         self.hook_filename = hook_filename
 
+        # Flags to prevent repeated calls for the same module
+        self.pre_safe_import_module_was_called = False
+
         # Name of the in-memory module fabricated to refer to this hook script.
         self.hook_module_name = (
             hook_module_name_prefix + self.module_name.replace('.', '_'))
@@ -404,6 +407,23 @@ class ModuleHook(object):
 
 
     ## Hooks
+
+    def call_pre_safe_import_module(self, hook_api):
+        """
+        Call the **pre-safe_import_module** function defined by this hook
+        script, if any. The function is passed the PreSafeImportModuleAPI
+        object used to communicate its changes back to the module graph.
+
+        Parameters
+        ----------
+        hook_api : PreSafeImportModuleAPI
+        """
+        self._load_hook_module()
+        if hasattr(self._hook_module, 'pre_safe_import_module'):
+            logger.info('Processing pre-safe import module hook   %s', self.module_name)
+            self._hook_module.pre_safe_import_module(hook_api)
+
+        self.pre_safe_import_module_was_called = True
 
     def post_graph(self):
         """

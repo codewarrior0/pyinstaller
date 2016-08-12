@@ -21,3 +21,9 @@ binaries, datas, hiddenimports = get_gi_typelibs('GLib', '2.0')
 datas += collect_glib_translations('glib20')
 datas += collect_glib_share_files('glib-2.0', 'schemas')
 
+
+def pre_safe_import_module(api):
+    # PyGObject modules loaded through the gi repository are marked as
+    # MissingModules by modulegraph so we convert them to
+    # RuntimeModules so their hooks are loaded and run.
+    api.add_runtime_module(api.module_name)
