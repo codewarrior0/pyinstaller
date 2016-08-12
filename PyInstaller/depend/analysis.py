@@ -36,8 +36,9 @@ import logging
 import os
 import re
 
+from PyInstaller.configure import get_importhooks_dir
 from ..building.datastruct import TOC
-from ..building.imphook import HooksCache
+from ..building.imphook import HooksCache, ModuleHookCache, AdditionalFilesCache
 from ..building.imphookapi import PreSafeImportModuleAPI, PreFindModulePathAPI
 from ..utils.misc import load_py_data_struct
 from ..lib.modulegraph.modulegraph import ModuleGraph
@@ -100,6 +101,19 @@ class PyiModuleGraph(ModuleGraph):
             os.path.join(self._homepath, 'PyInstaller', 'loader', 'rthooks.dat')
         )
 
+        # List of all directories containing hook scripts. Default hooks are
+        # listed before and hence take precedence over custom hooks.
+        module_hook_dirs = [get_importhooks_dir()]
+        module_hook_dirs.extend(self._user_hook_dirs)
+
+        # Hook cache prepopulated with these lazy loadable hook scripts.
+        self.module_hook_cache = ModuleHookCache(
+            module_graph=self, hook_dirs=module_hook_dirs)
+
+        # Cache of all external dependencies (e.g., binaries, datas) listed in
+        # hook scripts for imported modules.
+        self.additional_files_cache = AdditionalFilesCache()
+
     def _cache_hooks(self, hook_type):
         """
         Get a cache of all hooks of the passed type.
@@ -130,6 +144,72 @@ class PyiModuleGraph(ModuleGraph):
                 hooks_cache.add_custom_paths([user_hook_type_dir])
 
         return hooks_cache
+
+    def post_graph_hooks(self):
+        ### Post-graph hooks.
+        #
+        # Run post-graph hooks for all modules imported by this user's
+        # application. For each iteration of the infinite "while" loop below:
+        #
+        # 1. All hook() functions defined in cached hooks for imported modules
+        #    are called. This may result in new modules being imported (e.g., as
+        #    hidden imports) that were ignored earlier in the current iteration:
+        #    if this is the case, all hook() functions defined in cached hooks
+        #    for these modules will be called by the next iteration.
+        # 2. All cached hooks whose hook() functions were called are removed
+        #    from this cache. If this cache is empty, no hook() functions will
+        #    be called by the next iteration and this loop will be terminated.
+        # 3. If no hook() functions were called, this loop is terminated.
+        logger.info('Executing post-graph hooks...')
+
+        # For each imported module, run this module's post-graph hooks if any.
+        while True:
+            # Set of the names of all imported modules whose post-graph hooks
+            # are run by this iteration, preventing the next iteration from re-
+            # running these hooks. If still empty at the end of this iteration,
+            # no post-graph hooks were run; thus, this loop will be terminated.
+            hooked_module_names = set()
+
+            # For each remaining hookable module and corresponding hooks...
+            for module_name, module_hooks in self.module_hook_cache.items():
+                # Graph node for this module if imported or "None" otherwise.
+                module_node = self.findNode(
+                    module_name, create_nspkg=False)
+
+                # If this module has not been imported, temporarily ignore it.
+                # This module is retained in the cache, as a subsequently run
+                # post-graph hook could import this module as a hidden import.
+                if module_node is None:
+                    continue
+
+                # If this module is unimportable, permanently ignore it.
+                if type(module_node).__name__ not in VALID_MODULE_TYPES:
+                    hooked_module_names.add(module_name)
+                    continue
+
+                # For each hook script for this module...
+                for module_hook in module_hooks:
+                    # Run this script's post-graph hook if any.
+                    module_hook.post_graph()
+
+                    # Cache all external dependencies listed by this script
+                    # after running this hook, which could add dependencies.
+                    self.additional_files_cache.add(
+                        module_name,
+                        module_hook.binaries,
+                        module_hook.datas)
+
+                # Prevent this module's hooks from being run again.
+                hooked_module_names.add(module_name)
+
+            # Prevent all post-graph hooks run above from being run again by the
+            # next iteration.
+            self.module_hook_cache.remove_modules(*hooked_module_names)
+
+            # If no post-graph hooks were run, terminate iteration.
+            if not hooked_module_names:
+                break
+
 
     def run_script(self, pathname, caller=None):
         """

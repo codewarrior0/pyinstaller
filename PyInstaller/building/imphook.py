@@ -86,7 +86,12 @@ class ModuleHookCache(UserDict):
         # a weak rather than strong reference is stored to the passed graph.
         # Since this graph is guaranteed to live longer than this cache, this is
         # guaranteed to be safe.
-        self.module_graph = weakref.proxy(module_graph)
+        # FIXME: The test suite creates a deep copy of the modulegraph. Now that the
+        #        PyiModuleGraph owns the ModuleHookCache and all of its ModuleHooks,
+        #        copy.deepcopy will not figure out that the proxies should be redirected
+        #        to the newly copied PyiModuleGraph
+        # self.module_graph = weakref.proxy(module_graph)
+        self.module_graph = module_graph
 
         # String unique to this cache prefixing the names of all in-memory
         # modules lazily loaded from cached hook scripts, privatized for safety.
@@ -273,7 +278,8 @@ class ModuleHook(object):
 
         # Note that the passed module graph is already a weak reference,
         # avoiding circular reference issues. See ModuleHookCache.__init__().
-        assert isinstance(module_graph, weakref.ProxyTypes)
+        # FIXME: See ModuleHookCache.__init__().
+        # assert isinstance(module_graph, weakref.ProxyTypes)
         self.module_graph = module_graph
         self.module_name = module_name
         self.hook_filename = hook_filename
@@ -308,11 +314,14 @@ class ModuleHook(object):
         '''
 
         # If this is a magic attribute, initialize this attribute by lazy
-        # loading this hook script and then return this attribute. To avoid
-        # recursion, the superclass method rather than getattr() is called.
+        # loading this hook script and then return this attribute. super() objects
+        # do not support calling __getattr__ to avoid recursion. Since
+        # _load_hook_module sets all of the magic attrs on this object,
+        # calling getattr() a second time will not call __getattr__ as the
+        # given attr will already be in the object's __dict__.
         if attr_name in _MAGIC_MODULE_HOOK_ATTRS:
             self._load_hook_module()
-            return super(ModuleHook, self).__getattr__(attr_name)
+            return getattr(self, attr_name)
         # Else, this is an undefined attribute. Raise an exception.
         else:
             raise AttributeError(attr_name)

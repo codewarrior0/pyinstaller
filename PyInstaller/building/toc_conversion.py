@@ -30,7 +30,7 @@ class DependencyProcessor(object):
     Class to convert final module dependency graph into TOC data structures.
     TOC data structures are suitable for creating the final executable.
     """
-    def __init__(self, graph, additional_files):
+    def __init__(self, graph):
         self._binaries = set()
         self._datas = set()
         self._distributions = set()
@@ -41,9 +41,9 @@ class DependencyProcessor(object):
         for node in graph.flatten(start=graph._top_script_node):
             # Update 'binaries', 'datas'
             name = node.identifier
-            if name in additional_files:
-                self._binaries.update(additional_files.binaries(name))
-                self._datas.update(additional_files.datas(name))
+            if name in graph.additional_files_cache:
+                self._binaries.update(graph.additional_files_cache.binaries(name))
+                self._datas.update(graph.additional_files_cache.datas(name))
             # Any module can belong to a single distribution
             self._distributions.update(self._get_distribution_for_node(node))
 
