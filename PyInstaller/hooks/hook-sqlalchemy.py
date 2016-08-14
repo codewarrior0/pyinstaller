@@ -15,27 +15,6 @@ from PyInstaller.lib.modulegraph.modulegraph import SourceModule
 # 'sqlalchemy.testing' causes bundling a lot of unnecessary modules.
 excludedimports = ['sqlalchemy.testing']
 
-# include most common database bindings
-# some database bindings are detected and include some
-# are not. We should explicitly include database backends.
-hiddenimports = ['pysqlite2', 'MySQLdb', 'psycopg2']
-
-# In SQLAlchemy >= 0.6, the "sqlalchemy.dialects" package provides dialects.
-if is_module_satisfies('sqlalchemy >= 0.6'):
-    dialects = exec_statement("import sqlalchemy.dialects;print(sqlalchemy.dialects.__all__)")
-    dialects = eval(dialects.strip())
-
-    for n in dialects:
-        hiddenimports.append("sqlalchemy.dialects." + n)
-# In SQLAlchemy <= 0.5, the "sqlalchemy.databases" package provides dialects.
-else:
-    databases = exec_statement("import sqlalchemy.databases; print(sqlalchemy.databases.__all__)")
-    databases = eval(databases.strip())
-
-    for n in databases:
-        hiddenimports.append("sqlalchemy.databases." + n)
-
-
 def hook(hook_api):
     """
     SQLAlchemy 0.9 introduced the decorator 'util.dependencies'.  This
@@ -46,7 +25,31 @@ def hook(hook_api):
     This hook scans for included SQLAlchemy modules and then scans those modules
     for any util.dependencies and marks those modules as hidden imports.
     """
+        
+    # include most common database bindings
+    # some database bindings are detected and include some
+    # are not. We should explicitly include database backends.
+    
 
+    hiddenimports = ['pysqlite2', 'MySQLdb', 'psycopg2']
+
+    # In SQLAlchemy >= 0.6, the "sqlalchemy.dialects" package provides dialects.
+    if is_module_satisfies('sqlalchemy >= 0.6'):
+        dialects = exec_statement("import sqlalchemy.dialects;print(sqlalchemy.dialects.__all__)")
+        dialects = eval(dialects.strip())
+    
+        for n in dialects:
+            hiddenimports.append("sqlalchemy.dialects." + n)
+    # In SQLAlchemy <= 0.5, the "sqlalchemy.databases" package provides dialects.
+    else:
+        databases = exec_statement("import sqlalchemy.databases; print(sqlalchemy.databases.__all__)")
+        databases = eval(databases.strip())
+    
+        for n in databases:
+            hiddenimports.append("sqlalchemy.databases." + n)
+    
+    hook_api.add_imports(*hiddenimports)
+    
     if not is_module_satisfies('sqlalchemy >= 0.9'):
         return
 
