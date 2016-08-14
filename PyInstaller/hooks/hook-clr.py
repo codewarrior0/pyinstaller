@@ -22,16 +22,19 @@ from os.path import join, exists
 # but tested only on Windows using .NET.
 
 if is_win:
-    pyruntime = 'Python.Runtime'
-    library = ctypes.util.find_library(pyruntime)
-    datas = []
-    if library:
-        datas = [(library, '')]
-    else:
-    	# find Python.Runtime.dll in pip-installed pythonnet package
-    	for sitepack in getsitepackages():
-    		library = join(sitepack, pyruntime + '.dll')
-    		if exists(library):
-    			datas = [(library, '')]
-    	if not datas:
-    		raise Exception(pyruntime + ' not found')
+	def hook(hook_api):
+		pyruntime = 'Python.Runtime'
+		library = ctypes.util.find_library(pyruntime)
+		datas = []
+		if library:
+			datas = [(library, '')]
+		else:
+			# find Python.Runtime.dll in pip-installed pythonnet package
+			for sitepack in getsitepackages():
+				library = join(sitepack, pyruntime + '.dll')
+				if exists(library):
+					datas = [(library, '')]
+			if not datas:
+				raise Exception(pyruntime + ' not found')
+		
+		hook_api.add_datas(datas)
