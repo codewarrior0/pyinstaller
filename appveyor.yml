@@ -101,11 +101,7 @@ install:
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
-  # Compile bootloader.
-  - "cd bootloader"
-  - "\"C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat\" %VCVARSALL%"
-  - "python waf --msvc_version=\"msvc 12.0\" distclean all"
-  - "cd .."
+  # Not compiling bootloader - this branch tests precompiled bootloaders
 
   ### Install the PyInsaller dependencies.
   # Upgrade to the latest pip.
